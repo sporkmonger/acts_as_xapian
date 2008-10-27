@@ -398,7 +398,7 @@ module ActsAsXapian
         # date ranges or similar. Use this for cheap highlighting with
         # TextHelper::highlight, and excerpt.
         def words_to_highlight
-            query_nopunc = self.query_string.gsub(/[^a-z0-9:\.\/_]/i, " ")
+            query_nopunc = self.query_string.gsub(/[^\w:\.\/_]/i, " ")
             query_nopunc = query_nopunc.gsub(/\s+/, " ")
             words = query_nopunc.split(" ")
             # Remove anything with a :, . or / in it
