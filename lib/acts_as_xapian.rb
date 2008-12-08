@@ -322,7 +322,7 @@ module ActsAsXapian
             lhash = {}
             lhash.default = []
             for doc in docs
-                k = doc[:data].split('-')
+                k = doc[:data].split("-\\-")
                 lhash[k[0]] = lhash[k[0]] + [k[1]]
             end
             # for each class, look up all ids
@@ -331,13 +331,20 @@ module ActsAsXapian
                 conditions = [ "#{cls.constantize.table_name}.#{cls.constantize.primary_key} in (?)", ids ]
                 found = cls.constantize.find(:all, :conditions => conditions, :include => cls.constantize.xapian_options[:eager_load])
                 for f in found
-                    chash[[cls, f.id]] = f
+                    chash[[cls, f.id.to_s]] = f
                 end
             end
             # now get them in right order again
             results = []
-            docs.each{|doc| k = doc[:data].split('-'); results << { :model => chash[[k[0], k[1].to_i]],
-                    :percent => doc[:percent], :weight => doc[:weight], :collapse_count => doc[:collapse_count] } }
+            docs.each do |doc|
+                model_name, model_id = doc[:data].split("-\\-")
+                results << {
+                    :model => chash[[model_name, model_id]],
+                    :percent => doc[:percent],
+                    :weight => doc[:weight],
+                    :collapse_count => doc[:collapse_count]
+                }
+            end
             self.cached_results = results
             return results
         end
@@ -591,7 +598,7 @@ module ActsAsXapian
     module InstanceMethods
         # Used internally
         def xapian_document_term
-            self.class.to_s + "-" + self.id.to_s
+            self.class.to_s + "-\\-" + self.id.to_s
         end
 
         # Extract value of a field from the model
