@@ -328,7 +328,7 @@ module ActsAsXapian
             # for each class, look up all ids
             chash = {}
             for cls, ids in lhash
-                joins = "INNER JOIN (select #{ids.first} as id #{ids[1..-1].map {|i| 'union all select ' + i.to_s + ' '} * ' '}) AS x ON #{cls.constantize.table_name}.#{cls.constantize.primary_key} = x.id"
+                joins = "INNER JOIN (select '#{ids.first}' as id #{ids[1..-1].map {|i| "union all select '" + i.to_s + "' "} * " "}) AS x ON #{cls.constantize.table_name}.#{cls.constantize.primary_key} = x.id"
                 found = cls.constantize.find(:all, :joins => joins, :include => cls.constantize.xapian_options[:eager_load])
                 for f in found
                     chash[[cls, f.id.to_s]] = f
