@@ -746,11 +746,15 @@ module ActsAsXapian
             # I've written a small report in the discussion group why this is the proper way of doing this.
             # see here: XXX - write it you lazy douche bag!
             self.reflections.each do |association_name, r|
-              # skip if the associated model isn't indexed by acts_as_xapian
-              next unless r.klass.respond_to?(:xapian?) && r.klass.xapian?
               # skip all associations except ham and habtm
               next unless [:has_many, :has_many_and_belongs_to_many].include?(r.macro)
-  
+              begin
+                # skip if the associated model isn't indexed by acts_as_xapian
+                next unless r.klass.respond_to?(:xapian?) && r.klass.xapian?
+              rescue Exception
+                next
+              end
+
               # XXX todo:
               # extend the associated model xapian options with this term:
               # [proxy_reflection.primary_key_name.to_sym, <magically find a free capital letter>, proxy_reflection.primary_key_name]
