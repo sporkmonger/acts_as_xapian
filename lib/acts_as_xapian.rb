@@ -338,12 +338,16 @@ module ActsAsXapian
             results = []
             docs.each do |doc|
                 model_name, model_id = doc[:data].split("-\\-")
-                results << {
+                result = {
                     :model => chash[[model_name, model_id]],
                     :percent => doc[:percent],
                     :weight => doc[:weight],
                     :collapse_count => doc[:collapse_count]
                 }
+                if result[:model].respond_to?(:weight)
+                  result[:weight] *= result[:model].weight
+                end
+                results << result
             end
             self.cached_results = results
             return results
