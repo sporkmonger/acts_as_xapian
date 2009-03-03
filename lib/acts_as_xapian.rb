@@ -380,7 +380,7 @@ module ActsAsXapian
             self.initialize_db
 
             # Case of a string, searching for a Google-like syntax query
-            self.query_string = query_string
+            self.query_string = query_string.to_str.gsub(/\-/, "_")
 
             # Construct query which only finds things from specified models
             model_query = Xapian::Query.new(Xapian::Query::OP_OR, model_classes.map{|mc| "M" + mc.to_s})
@@ -615,7 +615,7 @@ module ActsAsXapian
             elsif type == :boolean
                 value ? true : false
             else
-                value.to_s
+                value.to_s.gsub(/\-/, "_")
             end
         end
 
