@@ -671,6 +671,7 @@ module ActsAsXapian
 
         def xapian_determine_needs_index
           @xapian_needs_index = (self.respond_to?(:changed?) && self.changed?)
+          nil
         end
 
         # Used to mark changes needed by batch indexer
