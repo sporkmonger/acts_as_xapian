@@ -669,17 +669,24 @@ module ActsAsXapian
             ActsAsXapian.writable_db.delete_document("I" + self.xapian_document_term)
         end
 
+        def xapian_determine_needs_index
+          @xapian_needs_index = (self.respond_to?(:changed?) && self.changed?)
+        end
+
         # Used to mark changes needed by batch indexer
         def xapian_mark_needs_index
-            model = self.class.base_class.to_s
-            model_id = self.id
-            ActiveRecord::Base.transaction do
-                found = ActsAsXapianJob.delete_all([ "model = ? and model_id = ?", model, model_id])
-                job = ActsAsXapianJob.new
-                job.model = model
-                job.model_id = model_id
-                job.action = 'update'
-                job.save!
+            # we still want to index if this is nil
+            if @xapian_needs_index != false
+                model = self.class.base_class.to_s
+                model_id = self.id
+                ActiveRecord::Base.transaction do
+                    found = ActsAsXapianJob.delete_all([ "model = ? and model_id = ?", model, model_id])
+                    job = ActsAsXapianJob.new
+                    job.model = model
+                    job.model_id = model_id
+                    job.action = 'update'
+                    job.save!
+                end
             end
         end
         def xapian_mark_needs_destroy
@@ -780,6 +787,7 @@ module ActsAsXapian
 
             ActsAsXapian.init(self.class.to_s, options)
 
+            before_save :xapian_determine_needs_index
             after_save :xapian_mark_needs_index
             after_destroy :xapian_mark_needs_destroy
         end
